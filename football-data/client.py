@@ -1,54 +1,41 @@
-#!/Users/rohan/miniconda/bin/python
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import requests
 import json
 
 base_url = "http://api.football-data.org/alpha/"
 
-url = base_url + "soccerseasons"
+# get all the league codes for a soccer season
+def get_league_codes(year):
+    url = base_url + "soccerseasons"
 
-params = dict(
-    season=2014
- )
-resp = requests.get(url=url, params=params)
-data = json.loads(resp.text)
+    params = dict(
+        season=year
+    )
+    resp = requests.get(url=url, params=params)
+    data = json.loads(resp.text)
 
-league = next(x for x in data if x['league'] == "PL")
-print "%s Code: %s " % ( league['caption'], league['league'] )
-teams = requests.get(url=league['_links']['teams']['href'])
-teams = json.loads(teams.text)
+    return [x['league'] for x in data]
 
-squad_values = []
+# Given a soccer season and a league code (e.g. PL for Premier League),
+# get the league info
+def get_league(year,code):
+    url = base_url + "soccerseasons"
 
-import string_util
-for t in teams["teams"]:
-    print "%s Squad Value %s" % (t["name"], t["squadMarketValue"])
-    value = string_util.parse_currency(t["squadMarketValue"])
-    squad_values.append((t["name"],value))
+    params = dict(
+        season=year
+    )
+    resp = requests.get(url=url, params=params)
+    data = json.loads(resp.text)
 
-#sort data
-squad_values.sort(key=lambda x: x[1])
+    league = next(x for x in data if x['league'] == code)
+    return league
 
-from matplotlib import pyplot as plt
-import numpy as np
+# Get all teams info for given league object populated using
+# get_league function
+def get_teams(league):
+    teams = requests.get(url=league['_links']['teams']['href'])
+    return json.loads(teams.text)
 
 
-fig = plt.figure()
 
-index = np.arange(len(squad_values))
-bar_width = 0.35
-
-ax = plt.subplot()
-ax.bar(np.arange(len(squad_values)), [x[1] for x in  squad_values ],bar_width)
-
-plt.xlabel('Teams')
-
-plt.ylabel('Squad Values (€)')
-plt.title('Squad Values in the Premier League')
-plt.xticks(index + bar_width, tuple([x[0] for x in  squad_values ]),rotation='vertical')
-
-plt.tight_layout()
-
-plt.show()
 

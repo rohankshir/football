@@ -3,7 +3,10 @@
 from __future__ import unicode_literals
 import client
 
-league = client.get_league(2014,'PL')
+year = 2014
+league_code = 'PL'
+
+league = client.get_league(year,league_code)
 teams = client.get_teams(league)
 
 squad_values = []
@@ -11,7 +14,10 @@ squad_values = []
 import string_util
 
 for t in teams["teams"]:
-    value = string_util.parse_currency(t["squadMarketValue"])
+    squad_value = t["squadMarketValue"]
+    if not squad_value:
+        continue
+    value = string_util.parse_currency(squad_value)
     squad_values.append((t["name"],value))
 
 #sort data
@@ -32,7 +38,7 @@ ax.bar(np.arange(len(squad_values)), [x[1] for x in  squad_values ],bar_width)
 plt.xlabel('Teams')
 
 plt.ylabel('Squad Values (€)')
-plt.title('Squad Values in the Premier League')
+plt.title('Squad Values in the Premier League (%d)' % year)
 plt.xticks(index + bar_width, tuple([x[0] for x in  squad_values ]),rotation='vertical')
 
 plt.tight_layout()

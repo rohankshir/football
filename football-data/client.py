@@ -33,7 +33,9 @@ def get_league(year,code):
 # Get all teams info for given league object populated using
 # get_league function
 def get_teams(league):
-    teams = requests.get(url=league['_links']['teams']['href'])
+    url = league['_links']['teams']['href']
+    print url
+    teams = requests.get(url=url)
     return json.loads(teams.text)
 
 
